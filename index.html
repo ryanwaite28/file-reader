@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title></title>
+  <style>
+    #image-elem {
+      padding: 2px;
+      border: none;
+      width: 475px;
+      max-width: 100%;
+      margin-bottom: 10px;
+      border: 1px solid grey;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+      background: white;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div>
+    <input id="testfile" type="file" onchange="readfile()" />
+    <br/><br/>
+    <button id="clearinput" onclick="clearinput()">Clear Input</button>
+
+    <br/>
+    <br/>
+
+    <div id="info-text"></div>
+
+    <br/>
+
+    <img id="image-elem" />
+  </div>
+
+  <script>
+    function readfile() {
+      getFileInfo("testfile")
+        .then(result => {
+          console.log(result);
+          getFileContents(result.file)
+            .then(resp => {
+              // console.log(resp);
+              let keys = Object.keys(result);
+              let box_elem = document.getElementById('info-text');
+              if(keys.length === 0) {
+                box_elem.innerHTML = '';
+              }
+              else {
+                document.getElementById('info-text').innerHTML = '';
+                let p = document.createElement('p');
+                let text = '';
+                keys.forEach(key => {
+                  let value = result[key];
+                  text += '<strong>' + key + '</strong>: ' + value + '<br/>';
+                });
+                p.innerHTML = text;
+                box_elem.appendChild(p);
+              }
+
+              if (result.type.split('/')[0] === 'image') {
+                document.getElementById('image-elem').src = resp;
+                document.getElementById('image-elem').style.display = 'block';
+              }
+              else {
+                document.getElementById('image-elem').src = '';
+                document.getElementById('image-elem').style.display = 'none';
+              }
+            })
+        })
+        .catch(error => { alert('error processing...'); })
+    }
+
+    function clearinput() {
+      let input = document.getElementById("testfile");
+      input.value = "";
+      document.getElementById('image-elem').src = '';
+      document.getElementById('image-elem').style.display = 'none';
+      document.getElementById('info-text').innerHTML = '';
+    }
+
+    function getFileInfo(id) {
+      return new Promise((resolve, reject) => {
+        if (!id) {
+          return reject({
+            error: true,
+            message: "no id was provided..."
+          });
+        }
+        if (id.constructor !== String) {
+          return reject({
+            error: true,
+            message: "id was not of type: String..."
+          });
+        }
+
+        let input = document.getElementById("testfile");
+        if (!input.files[0]) {
+          return reject({
+            error: true,
+            message: "input holds no file..."
+          });
+        }
+
+        let file = input.files[0];
+        return resolve({
+          name: file.name.split('.')[0],
+          ext: file.name.split('.')[1],
+          fullName: file.name,
+          size: file.size,
+          type: file.type,
+          file: file,
+          lastModified: file.lastModified,
+          lastModifiedDate: file.lastModifiedDate
+        });
+      });
+    }
+
+    function getFileContents(file) {
+      return new Promise((resolve, reject) => {
+        if (!file) {
+          return reject({
+            error: true,
+            message: "no file was provided..."
+          });
+        }
+        if (file.constructor !== File) {
+          return reject({
+            error: true,
+            message: "input was not of type: File..."
+          });
+        }
+
+        var reader = new FileReader();
+
+        reader.addEventListener("load", () => {
+          resolve(reader.result);
+        }, false);
+
+        if (file) {
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+  </script>
+</body>
+
+</html>
