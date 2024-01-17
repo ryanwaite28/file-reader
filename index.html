@@ -17,6 +17,8 @@
       display: none;
     }
   </style>
+
+<script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
 </head>
 
 <body>
@@ -97,7 +99,7 @@
           });
         }
 
-        let input = document.getElementById("testfile");
+        let input = document.getElementById(id);
         if (!input.files[0]) {
           return reject({
             error: true,
@@ -135,13 +137,28 @@
         }
 
         var reader = new FileReader();
-
+        
+        
         reader.addEventListener("load", () => {
           resolve(reader.result);
         }, false);
-
+        
         if (file) {
           reader.readAsDataURL(file);
+        }
+        
+        
+        var reader2 = new FileReader();
+        
+        reader2.addEventListener("load", () => {
+          console.log(`file as array buffer`);
+          console.log(reader2.result);
+          const bufArr = new Uint8Array(reader2.result);
+          console.log(`as chunks of 10,000`, _.chunk(bufArr, 5_000));
+        }, false);
+        
+        if (file) {
+          reader2.readAsArrayBuffer(file);
         }
       });
     }
